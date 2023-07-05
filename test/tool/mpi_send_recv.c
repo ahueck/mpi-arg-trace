@@ -1,9 +1,9 @@
-// RUN: %mpicc %s -o %s.exe
+// RUN: OMPI_CC=clang %mpicc %s -g -O0 -o %s.exe
 // RUN: LD_PRELOAD=%mpitracer %mpi-exec -n 2 %s.exe
 
 #include <mpi.h>
 
-int main(int argc, char** argv) {
+void comm(int argc, char** argv) {
   MPI_Init(&argc, &argv);
 
   int rank, size;
@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
 
   if (size != 2) {
     MPI_Finalize();
-    return 1;
+    return;
   }
 
   int data = 0;
@@ -24,5 +24,9 @@ int main(int argc, char** argv) {
   }
 
   MPI_Finalize();
+}
+
+int main(int argc, char** argv) {
+  comm(argc,argv);
   return 0;
 }

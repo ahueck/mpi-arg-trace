@@ -5,6 +5,7 @@ mpitracer_make_wrap(mpi_interceptor_tmpl.w ${LIB_SOURCE} ${CMAKE_CURRENT_SOURCE_
 add_library(${MPITRACER_PREFIX}_mpitracer SHARED
   ${LIB_SOURCE}
   InterceptorFunctions.cpp
+  System.cpp
 )
 
 set_property(TARGET ${MPITRACER_PREFIX}_mpitracer PROPERTY OUTPUT_NAME "mpitracer")
