@@ -1,0 +1,20 @@
+@LIT_SITE_CFG_IN_HEADER@
+
+import sys
+
+# LLVM toolchain:
+config.clang_cpp = "@MPITRACER_CLANGCXX_EXEC@"
+config.clang = "@MPITRACER_CLANG_EXEC@"
+config.filecheck = "@MPITRACER_FILECHECK_EXEC@"
+
+# Project related:
+config.mpitracer_lib_dir = "@MPITRACER_LIBRARY_DIR@"
+config.mpitracer_script_dir = "@MPITRACER_SCRIPT_DIR@"
+config.mpitracer_lib = "$<TARGET_FILE_NAME:mpitracer::mpitracer>"
+config.mpicc="@MPI_C_COMPILER@"
+config.mpicxx="@MPI_CXX_COMPILER@"
+config.mpiexec="@MPIEXEC@"
+
+# Let the main config do the real work.
+config.loaded_site_config = True
+lit_config.load_config(config, "@MPITRACER_PROJECT_DIR@/test/lit.cfg")
