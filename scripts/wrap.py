@@ -1029,7 +1029,11 @@ def create_full_trace_callback(out, scope, args, children):
         use_count =0
         for i, use in enumerate(boolean_mask):
             if use:
-                used_args[arg_category[use_count]] = "&"+scope.map['args'][i]
+                prefix = ""
+                # if not already ptr type
+                if not (scope.map['types'][i].endswith("*") or scope.map['types'][i].endswith("[]")):
+                    prefix="&"
+                used_args[arg_category[use_count]] = prefix+scope.map['args'][i]
                 use_count += 1
 
         out.write("mpi_arg_trace_push_full(\n")
