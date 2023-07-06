@@ -1019,14 +1019,31 @@ def create_full_trace_callback(out, scope, args, children):
         "newINFO"
     ]
 
-    out.write("mpi_arg_trace_push_full(\n")
-    out.write("\"%s\",\n"%scope.function_name)
-    out.write("wrapped_ret_addr,\n")
+    if scope.function_name in mpi_api_dict:
+        # retreive the necessary info from the api information
+        boolean_mask , arg_category = mpi_api_dict[scope.function_name][1][scope.map['nargs']]
+        #print(boolean_mask)
+        #print(arg_category)
+        used_args={}
 
-    
+        use_count =0
+        for i, use in enumerate(boolean_mask):
+            if use:
+                used_args[arg_category[use_count]] = "&"+scope.map['args'][i]
+                use_count += 1
 
-    out.write(");\n")
-    out.write("\n")
+        out.write("mpi_arg_trace_push_full(\n")
+        out.write("\"%s\",\n"%scope.function_name)
+        out.write("wrapped_ret_addr")
+
+        for a in full_callback_arg_list:
+            if a in used_args:
+                out.write(",\n"+used_args[a])
+            else:
+                out.write(",\nNULL")
+
+        out.write("\n);\n")
+
 
 
 @macro("fn", has_body=True)
