@@ -30,7 +30,7 @@ void mpi_arg_trace_push_full(
   const int* COORDINATE,
   void* C_BUFFER,
   void* C_BUFFER2,
-  int* DATATYPE,
+  MPI_Datatype* DATATYPE,
   int* DEGREE,
   int* DIMENSION,
   int* DISPLACEMENT,
