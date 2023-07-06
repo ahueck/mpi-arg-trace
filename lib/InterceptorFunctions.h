@@ -53,7 +53,7 @@ void mpi_arg_trace_push_full(
   MPI_Count* NUM_BYTES,
   int* NUM_DIMS,
   MPI_Offset* OFFSET,
-  MPI_Datatype* OPERATION,
+  MPI_Op* OPERATION,
   const int* ORDER,
   const int* POLYDISPLACEMENT,
   MPI_Aint* POLYDISPLACEMENT_AINT_COUNT,
