@@ -931,6 +931,104 @@ def foreachfn(out, scope, args, children):
             child.evaluate(out, fn_scope)
     cur_function = None
 
+
+def create_full_trace_callback(out, scope, args, children):
+
+    # first two args are ignored
+    full_callback_arg_list = [
+        "ACCESS_MODE",
+        "ALLOC_MEM_NUM_BYTES",
+        "ARGUMENT_COUNT",
+        "ARGUMENT_LIST",
+        "ARRAY_LENGTH",
+        "ARRAY_LENGTH_NNI",
+        "ARRAY_LENGTH_PI",
+        "ASSERT",
+        "ATTRIBUTE_VAL",
+        "ATTRIBUTE_VAL_10",
+        "BUFFER",
+        "COLOR",
+        "COMMUNICATOR",
+        "COMM_COMPARISON",
+        "COMM_SIZE",
+        "COORDINATE",
+        "C_BUFFER",
+        "C_BUFFER2",
+        "DATATYPE",
+        "DEGREE",
+        "DIMENSION",
+        "DISPLACEMENT",
+        "ERRHANDLER",
+        "ERROR_CLASS",
+        "ERROR_CODE",
+        "EXTRA_STATE",
+        "FILE",
+        "FUNCTION",
+        "GROUP",
+        "INDEX",
+        "INFO",
+        "INFO_VALUE_LENGTH",
+        "KEY",
+        "KEYVAL",
+        "KEY_INDEX",
+        "LOCK_TYPE",
+        "LOGICAL",
+        "MESSAGE",
+        "NUM_BYTES",
+        "NUM_DIMS",
+        "OFFSET",
+        "OPERATION",
+        "ORDER",
+        "POLYDISPLACEMENT",
+        "POLYDISPLACEMENT_AINT_COUNT",
+        "POLYDISPLACEMENT_COUNT",
+        "POLYDISPOFFSET",
+        "POLYDTYPE_NUM_ELEM",
+        "POLYDTYPE_NUM_ELEM_NNI",
+        "POLYDTYPE_NUM_ELEM_PI",
+        "POLYDTYPE_STRIDE_BYTES",
+        "POLYFUNCTION",
+        "POLYNUM_BYTES",
+        "POLYNUM_BYTES_NNI",
+        "POLYRMA_DISPLACEMENT",
+        "POLYXFER_NUM_ELEM",
+        "POLYXFER_NUM_ELEM_NNI",
+        "PROFILE_LEVEL",
+        "RANK",
+        "RANK_NNI",
+        "REQUEST",
+        "RMA_DISPLACEMENT_NNI",
+        "SPLIT_TYPE",
+        "STATUS",
+        "STRING",
+        "STRING_LENGTH",
+        "TAG",
+        "THREAD_LEVEL",
+        "TOPOLOGY_TYPE",
+        "TYPECLASS",
+        "TYPECLASS_SIZE",
+        "UPDATE_MODE",
+        "VERSION",
+        "WEIGHT",
+        "WINDOW",
+        "WINDOW_SIZE",
+        "WIN_ATTACH_SIZE",
+        "newCOMMUNICATOR",
+        "newDATATYPE",
+        "newGROUP",
+        "newINFO"
+    ]
+
+    out.write("mpi_arg_trace_push_full(\n")
+    out.write("\"%s\",\n"%scope.function_name)
+    out.write("wrapped_ret_addr,\n")
+
+    
+
+    out.write(");\n")
+    out.write("\n")
+
+
 @macro("fn", has_body=True)
 def fn(out, scope, args, children):
     """Iterate over listed functions and generate skeleton too."""
@@ -999,6 +1097,7 @@ def fn(out, scope, args, children):
                 out.write("    }\n")
 
             fn_scope["callfn"] = callfn
+            fn_scope["full_trace_callback"] = create_full_trace_callback
 
             def write_fortran_init_flag():
                 output.write("static int fortran_init = 0;\n")
@@ -1006,6 +1105,7 @@ def fn(out, scope, args, children):
 
         else:
             fn_scope["callfn"] = c_call
+            fn_scope["full_trace_callback"] = create_full_trace_callback
 
         def write_body(out):
             for child in children:
