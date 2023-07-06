@@ -106,6 +106,7 @@ bool test_command(std::string_view command, std::string_view test_arg) {
   os << command << " " << test_arg;
 
   const bool avail = available(os.str());
+
   return avail;
 }
 
@@ -133,12 +134,33 @@ class SourceLocHelper {
   }
 };
 
+struct RemoveEnvInScope {
+  explicit RemoveEnvInScope(std::string_view var_name) : var_name_(var_name) {
+    old_val_ = getenv(var_name_.data());
+    if (!old_val_.empty()) {
+      setenv(var_name_.data(), "", true);
+    }
+  }
+
+  ~RemoveEnvInScope() {
+    if (!old_val_.empty()) {
+      setenv(var_name_.data(), old_val_.data(), true);
+    }
+  }
+
+ private:
+  std::string_view var_name_;
+  std::string_view old_val_;
+};
+
 }  // namespace system
 
 std::optional<SourceLocation> SourceLocation::create(const void* addr, intptr_t offset_ptr) {
+  // Required, otherwise endless recursion:
+  system::RemoveEnvInScope rm_preload_var{"LD_PRELOAD"};
+
   const auto pipe = [](const void* paddr, intptr_t offset_ptr) -> std::optional<system::CommandPipe> {
-    using namespace system;
-    const auto& sloc_helper = SourceLocHelper::get();
+    const auto& sloc_helper = system::SourceLocHelper::get();
     const auto& proc        = system::Process::get();
 
     // FIXME: Inst Pointer points one past what we need with __built_in_return_addr(0), hacky way to fix:
@@ -173,7 +195,6 @@ std::optional<SourceLocation> SourceLocation::create(const void* addr, intptr_t 
 
   loc.function             = pipe->nextLine();
   const auto file_and_line = pipe->nextLine();
-  //  std::cerr << "DBG: " <<file_and_line << "\n";
   const auto delimiter = file_and_line.find(':');
   loc.line             = file_and_line.substr(delimiter + 1);
   loc.file             = file_and_line.substr(0, delimiter);
