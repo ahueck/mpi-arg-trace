@@ -55,6 +55,11 @@ usage_string = \
 '''
 import tempfile, getopt, subprocess, sys, os, re, types, itertools
 
+from MPIAPIParameters import mpi_api_dict
+from MPITable import MPIParamList, MPICallback
+
+mpi_params = MPIParamList()
+
 # Default values for command-line parameters
 mpicc = 'mpicc'                    # Default name for the MPI compiler
 includes = []                      # Default set of directories to inlucde when parsing mpi.h
@@ -945,6 +950,18 @@ def fn(out, scope, args, children):
         fn_scope[fn_var] = fn_name
         include_decl(fn_scope, fn)
 
+        types_list = fn_scope["types"]
+        types_list_not_empty = [element for element in types_list if element != ""]
+        if fn_name in mpi_api_dict:
+            length_params = len(types_list_not_empty)
+            mpi_api_entry = mpi_api_dict[fn_name]
+            mpi_api_tuple = mpi_api_entry[1][length_params]
+            bool_mask = mpi_api_tuple[0]
+            categories = mpi_api_tuple[1]
+            #used_categories = [cat for i, cat in enumerate(categories) if len(bool_mask) > i and bool_mask[i]]
+            mpi_params.callback_param_append(fn_name, categories, types_list_not_empty)
+
+
         fn_scope["ret_val"] = return_val
         fn_scope["returnVal"]  = fn_scope["ret_val"]  # deprecated name.
 
@@ -1359,3 +1376,8 @@ except WrapSyntaxError:
     sys.exit(1)
 
 output.close()
+
+
+# print ('{}'.format(mpi_params.mpi_param_list))
+callback = MPICallback(mpi_params, 'mpi_arg_trace_push')
+# callback.make()

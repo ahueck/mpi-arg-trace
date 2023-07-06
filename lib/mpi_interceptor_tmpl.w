@@ -1,10 +1,10 @@
 #include "InterceptorFunctions.h"
 
-{{fn mpi_fun MPI_Send MPI_Recv}}
+{{fnall mpi_fun MPI_Finalize}}
   const void* wrapped_ret_addr = __builtin_return_address(0);
   mpi_arg_trace_push("{{mpi_fun}}", wrapped_ret_addr);
   {{callfn}}
-{{endfn}}
+{{endfnall}}
 
 {{fn mpi_fun MPI_Finalize}}
 const void* wrapped_ret_addr = __builtin_return_address(0);
