@@ -1,7 +1,15 @@
 // RUN: OMPI_CC=clang %mpicc %s -g -O0 -o %s.exe
-// RUN: LD_PRELOAD=%mpitracer %mpi-exec -n 2 %s.exe
+// RUN: LD_PRELOAD=%mpitracer %mpi-exec -n 2 %s.exe 2>&1 | %filecheck %s
 
 #include <mpi.h>
+
+// CHECK: MPI_{{(Send|Recv)}},MPI_INT,MPI_COMM_WORLD
+
+// CHECK: MPI_Type_contiguous,MPI_INT
+// CHECK: MPI_Type_commit,MPI_Type_contiguous
+// CHECK: MPI_Type_contiguous,MPI_Type_contiguous
+
+// CHECK: MPI_{{(Send|Recv)}},MPI_Type_contiguous,MPI_COMM_WORLD
 
 void comm(int argc, char** argv) {
   MPI_Init(&argc, &argv);
