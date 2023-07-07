@@ -23,9 +23,11 @@ void comm(int argc, char** argv) {
     MPI_Recv(&data, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 
-  MPI_Datatype customType ;
+  MPI_Datatype customType =NULL;
   MPI_Type_contiguous(1, MPI_INT, &customType);
+  MPI_Datatype nestedType =NULL;
   MPI_Type_commit(&customType);
+  MPI_Type_contiguous(1, customType, &nestedType);
 
   if (rank == 0) {
     data = 42;

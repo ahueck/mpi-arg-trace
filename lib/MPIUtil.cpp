@@ -77,6 +77,10 @@ std::optional<int> get_combiner_id(MPI_Datatype dtype) {
   int num_addresses;
   int num_datatypes;
   int combiner;
+
+  if (NULL == dtype || MPI_DATATYPE_NULL == dtype) {
+    return {};
+  }
   auto mpierr = PMPI_Type_get_envelope(dtype, &num_integers, &num_addresses, &num_datatypes, &combiner);
 
   if (mpierr != MPI_SUCCESS) {
