@@ -1,29 +1,38 @@
 #include "InterceptorFunctions.h"
 
+#include "MPIUtil.h"
 #include "System.h"
 
 #include <iostream>
 #include <sstream>
 
-void mpi_arg_trace_push(const char* mpi_fn_name, const void* called_from) {
-  auto sloc =  mpitracer::SourceLocation::create(called_from);
+using namespace mpitracer;
 
-  if (sloc.has_value()) {
-    std::cerr << mpi_fn_name << " " << sloc.value().file << " " << sloc.value().function << ":" << sloc.value().line
-              << "\n";
-  } else {
-    std::cerr << mpi_fn_name << "\n";
-  }
+void mpi_arg_trace_push(const char* mpi_fn_name, const void* called_from) {
+  //  auto sloc =  mpitracer::SourceLocation::create(called_from);
+  //
+  //  if (sloc.has_value()) {
+  //    std::cerr << mpi_fn_name << " " << sloc.value().file << " " << sloc.value().function << ":" << sloc.value().line
+  //              << "\n";
+  //  } else {
+  //    std::cerr << mpi_fn_name << "\n";
+  //  }
 }
 
 void mpi_arg_trace_exit(const char* mpi_fn_name, const void* called_from) {
-  auto sloc = mpitracer::SourceLocation::create(called_from);
-  if (sloc.has_value()) {
-    std::cerr << mpi_fn_name << " " << sloc.value().file << " " << sloc.value().function << ":" << sloc.value().line
-              << "\n";
-  } else {
-    std::cerr << mpi_fn_name << "\n";
-  }
+  //  auto sloc = mpitracer::SourceLocation::create(called_from);
+  //  if (sloc.has_value()) {
+  //    std::cerr << mpi_fn_name << " " << sloc.value().file << " " << sloc.value().function << ":" << sloc.value().line
+  //              << "\n";
+  //  } else {
+  //    std::cerr << mpi_fn_name << "\n";
+  //  }
+}
+
+void mpi_arg_trace_start(const char* mpi_fn_name, const void* called_from) {
+  std::cerr << util::make_stream(",", "Function", "DATATYPE", "COMMUNICATOR", "OPERATION", "newCOMMUNICATOR",
+                                 "newDATATYPE", "file", "function", "line")
+            << "\n";
 }
 
 void mpi_arg_trace_push_full(
@@ -52,7 +61,9 @@ void mpi_arg_trace_push_full(
     const int* VERSION, const int* WEIGHT, const MPI_Win* WINDOW, const MPI_Aint* WINDOW_SIZE,
     const MPI_Aint* WIN_ATTACH_SIZE, const MPI_Comm* newCOMMUNICATOR, const MPI_Datatype* newDATATYPE,
     const MPI_Group* newGROUP, const MPI_Info* newINFO) {
-
-
-
+  auto sloc = mpitracer::SourceLocation::create(called_from).value_or(SourceLocation{});
+  std::cerr << util::make_stream(",", mpi_fun_name, util::mpi_datatype_t{DATATYPE}, util::mpi_comm_t{COMMUNICATOR},
+                                 util::mpi_op_t{OPERATION}, util::mpi_comm_t{newCOMMUNICATOR},
+                                 util::mpi_datatype_t{newDATATYPE}, sloc.file, sloc.function, sloc.line)
+            << "\n";
 }

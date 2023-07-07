@@ -23,6 +23,20 @@ void comm(int argc, char** argv) {
     MPI_Recv(&data, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 
+  MPI_Datatype customType ;
+  MPI_Type_contiguous(1, MPI_INT, &customType);
+  MPI_Type_commit(&customType);
+
+  if (rank == 0) {
+    data = 42;
+    MPI_Send(&data, 1, customType, 1, 0, MPI_COMM_WORLD);
+  } else if (rank == 1) {
+    MPI_Recv(&data, 1, customType, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  }
+
+  MPI_Type_free(&customType);
+
+
   MPI_Finalize();
 }
 

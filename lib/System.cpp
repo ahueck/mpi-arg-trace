@@ -164,7 +164,7 @@ std::optional<SourceLocation> SourceLocation::create(const void* addr, intptr_t 
     const auto& proc        = system::Process::get();
 
     // FIXME: Inst Pointer points one past what we need with __built_in_return_addr(0), hacky way to fix:
-    const intptr_t addr =  reinterpret_cast<intptr_t>(paddr) - offset_ptr;
+    const intptr_t addr = reinterpret_cast<intptr_t>(paddr) - offset_ptr;
 
     if (sloc_helper.hasLLVMSymbolizer()) {
       std::ostringstream command;
@@ -195,9 +195,9 @@ std::optional<SourceLocation> SourceLocation::create(const void* addr, intptr_t 
 
   loc.function             = pipe->nextLine();
   const auto file_and_line = pipe->nextLine();
-  const auto delimiter = file_and_line.find(':');
-  loc.line             = file_and_line.substr(delimiter + 1);
-  loc.file             = file_and_line.substr(0, delimiter);
+  const auto delimiter     = file_and_line.find(':');
+  loc.line                 = file_and_line.substr(delimiter + 1);
+  loc.file                 = file_and_line.substr(0, delimiter);
 
   return loc;
 }

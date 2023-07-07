@@ -6,6 +6,7 @@ add_library(${MPITRACER_PREFIX}_mpitracer SHARED
   ${LIB_SOURCE}
   InterceptorFunctions.cpp
   System.cpp
+  MPIUtil.cpp
 )
 
 set_property(TARGET ${MPITRACER_PREFIX}_mpitracer PROPERTY OUTPUT_NAME "mpitracer")
@@ -17,7 +18,7 @@ set_property(TARGET ${MPITRACER_PREFIX}_mpitracer PROPERTY C_STANDARD_REQUIRED T
 set_property(TARGET ${MPITRACER_PREFIX}_mpitracer PROPERTY CXX_STANDARD 17)
 set_property(TARGET ${MPITRACER_PREFIX}_mpitracer PROPERTY CXX_STANDARD_REQUIRED TRUE)
 
-target_compile_options (${MPITRACER_PREFIX}_mpitracer PUBLIC -fno-rtti)
+#target_compile_options (${MPITRACER_PREFIX}_mpitracer PUBLIC -fno-rtti)
 
 target_include_directories(${MPITRACER_PREFIX}_mpitracer ${warning_guard}
   PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/lib>
