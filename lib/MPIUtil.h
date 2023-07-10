@@ -65,6 +65,11 @@ struct array_to_pointer_decay<T[N]> {
 template <typename T>
 struct ForSpecialization {
   static auto value(const T& v) {
+    if constexpr (std::is_arithmetic_v<std::remove_pointer_t<T>>) {
+      if (v != nullptr) {
+        return std::to_string(*v);
+      }
+    }
     return std::string{""};
   }
 };

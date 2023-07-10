@@ -31,8 +31,8 @@ void mpi_arg_trace_exit(const char* mpi_fn_name, const void* called_from) {
 }
 
 void mpi_arg_trace_start(const char* mpi_fn_name, const void* called_from) {
-  std::cerr << util::make_stream(",", "Function", "DATATYPE", "COMMUNICATOR", "OPERATION", "newCOMMUNICATOR",
-                                 "newDATATYPE", "file", "function", "line")
+  std::cerr << util::make_stream(",", "Function", "RANK", "TAG", "POLYXFER_NUM_ELEM_NNI", "DATATYPE", "COMMUNICATOR",
+                                 "OPERATION", "newCOMMUNICATOR", "newDATATYPE", "file", "function", "line")
             << "\n";
 }
 
@@ -63,7 +63,7 @@ void mpi_arg_trace_push_full(
     const MPI_Aint* WIN_ATTACH_SIZE, const MPI_Comm* newCOMMUNICATOR, const MPI_Datatype* newDATATYPE,
     const MPI_Group* newGROUP, const MPI_Info* newINFO) {
   auto sloc = mpitracer::SourceLocation::create(called_from).value_or(SourceLocation{});
-  std::cerr << util::make_stream(",", mpi_fun_name, util::mpi_datatype_t{DATATYPE},
+  std::cerr << util::make_stream(",", mpi_fun_name, RANK, TAG, POLYXFER_NUM_ELEM_NNI, util::mpi_datatype_t{DATATYPE},
                                  util::mpi_comm_t{COMMUNICATOR, mpi_fun_name}, util::mpi_op_t{OPERATION},
                                  util::mpi_comm_t{newCOMMUNICATOR, mpi_fun_name}, util::mpi_datatype_t{newDATATYPE},
                                  sloc.file, sloc.function, sloc.line)
