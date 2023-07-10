@@ -9,12 +9,14 @@
 namespace mpitracer {
 namespace util {
 
+struct CommObject;
+
 namespace mpi {
 std::string combiner_name_for(int combiner);
 std::optional<int> get_combiner_id(MPI_Datatype dtype);
 std::string named_combiner_string(MPI_Datatype dtype);
 std::string mpi_op_name(MPI_Op operation);
-std::string mpi_comm_name(MPI_Comm operation);
+std::string mpi_comm_name(const CommObject& operation);
 }  // namespace mpi
 
 template <typename T, typename Parameter>
@@ -36,8 +38,17 @@ class NamedType {
   T value_;
 };
 
+struct CommObject {
+  const MPI_Comm* comm;
+  std::string mpi_fun{""};
+
+  const MPI_Comm* get() const {
+    return comm;
+  }
+};
+
 using mpi_datatype_t = util::NamedType<const MPI_Datatype*, struct MPIDtype>;
-using mpi_comm_t     = util::NamedType<const MPI_Comm*, struct MPICom>;
+using mpi_comm_t     = CommObject;  // util::NamedType<const MPI_Comm*, struct MPICom>;
 using mpi_op_t       = util::NamedType<const MPI_Op*, struct MPIOp>;
 
 namespace detail {
@@ -64,8 +75,8 @@ struct ForSpecialization<mpi_comm_t> {
     if (comm.get() == nullptr) {
       return std::string{""};
     }
-    const auto* communicator = comm.get();
-    return mpi::mpi_comm_name(*communicator);
+    //    const auto* communicator = comm.get();
+    return mpi::mpi_comm_name(comm);
   }
 };
 
