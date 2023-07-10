@@ -26,6 +26,6 @@ void comm(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-  comm(argc,argv);
+  comm(argc, argv);
   return 0;
 }

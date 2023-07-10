@@ -31,9 +31,9 @@ void comm(int argc, char** argv) {
     MPI_Recv(&data, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 
-  MPI_Datatype customType =NULL;
+  MPI_Datatype customType = NULL;
   MPI_Type_contiguous(1, MPI_INT, &customType);
-  MPI_Datatype nestedType =NULL;
+  MPI_Datatype nestedType = NULL;
   MPI_Type_commit(&customType);
   MPI_Type_contiguous(1, customType, &nestedType);
 
@@ -46,11 +46,10 @@ void comm(int argc, char** argv) {
 
   MPI_Type_free(&customType);
 
-
   MPI_Finalize();
 }
 
 int main(int argc, char** argv) {
-  comm(argc,argv);
+  comm(argc, argv);
   return 0;
 }

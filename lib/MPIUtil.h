@@ -75,7 +75,7 @@ struct ForSpecialization<mpi_comm_t> {
     if (comm.get() == nullptr) {
       return std::string{""};
     }
-//    const auto* communicator = comm.get();
+    //    const auto* communicator = comm.get();
     return mpi::mpi_comm_name(comm);
   }
 };

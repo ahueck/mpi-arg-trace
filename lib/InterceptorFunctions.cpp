@@ -65,7 +65,7 @@ void mpi_arg_trace_push_full(
   auto sloc = mpitracer::SourceLocation::create(called_from).value_or(SourceLocation{});
   std::cerr << util::make_stream(",", mpi_fun_name, util::mpi_datatype_t{DATATYPE},
                                  util::mpi_comm_t{COMMUNICATOR, mpi_fun_name}, util::mpi_op_t{OPERATION},
-                                 util::mpi_comm_t{newCOMMUNICATOR, mpi_fun_name}, util::mpi_datatype_t{newDATATYPE}, sloc.file,
-                                 sloc.function, sloc.line)
+                                 util::mpi_comm_t{newCOMMUNICATOR, mpi_fun_name}, util::mpi_datatype_t{newDATATYPE},
+                                 sloc.file, sloc.function, sloc.line)
             << "\n";
 }
