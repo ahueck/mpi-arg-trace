@@ -35,6 +35,12 @@ struct StringTrace {
     trace_file.flush();
   }
 
+  void close() {
+    if (trace_file.is_open()) {
+      trace_file.close();
+    }
+  }
+
   ~StringTrace() {
     if (trace_file.is_open()) {
       trace_file.close();
@@ -46,6 +52,9 @@ struct CerrTrace {
   //  std::vector<std::string> trace_;
 
   void open(int rank) {
+  }
+
+  void close() {
   }
 
   void push(std::string&& mpi_fun) {
@@ -81,6 +90,7 @@ void mpi_arg_trace_exit(const char* mpi_fn_name, const void* called_from) {
   //  } else {
   //    std::cerr << mpi_fn_name << "\n";
   //  }
+  mpi_trace.close();
 }
 
 void mpi_arg_trace_start(const char* mpi_fn_name, const void* called_from) {
