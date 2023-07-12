@@ -3,12 +3,12 @@
 #include "MPIUtil.h"
 #include "System.h"
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include <unordered_set>
 
 using namespace mpitracer;
+namespace fs = std::filesystem;
 
 int mpi_trace_process_rank{0};
 
@@ -16,21 +16,24 @@ struct StringTrace {
   std::ofstream trace_file;
 
   void open(int rank) {
-    const auto env_file = getenv("MPI_ARG_TRACE_FILE");
-
-    std::string file;
-    if (env_file != nullptr) {
-      file = env_file;
-    }
-    if (file.empty()) {
-      file = "trace_" + std::to_string(mpi_trace_process_rank) + ".txt";
-    }
+    const auto env_file = getenv("MPI_ARG_TRACE_DIR");
+    const auto file     = [](const auto* env_file) {
+      fs::path path;
+      if (env_file != nullptr) {
+        path += env_file;
+        if (!is_directory(path)) {
+          std::cerr << "[MPI_ARG_TRACE] ERROR. Expected directory for MPI_ARG_TRACE_DIR. Given: '" << path << "'\n";
+          PMPI_Abort(MPI_COMM_WORLD, -1);
+        }
+      }
+      path /= ("mpi-arg-trace-" + std::to_string(mpi_trace_process_rank) + ".txt");
+      return path;
+    }(env_file);
 
     trace_file.open(file, std::ios::out | std::ios::app);
   }
 
   void push(std::string&& mpi_fun) {
-    //    trace_.emplace_back(std::move(mpi_fun));
     trace_file << mpi_fun << "\n";
     trace_file.flush();
   }
@@ -49,8 +52,6 @@ struct StringTrace {
 };
 
 struct CerrTrace {
-  //  std::vector<std::string> trace_;
-
   void open(int rank) {
   }
 
@@ -58,7 +59,6 @@ struct CerrTrace {
   }
 
   void push(std::string&& mpi_fun) {
-    //    trace_.emplace_back(std::move(mpi_fun));
     std::cerr << mpi_fun << "\n";
   }
 };
@@ -72,24 +72,9 @@ using TraceObject = CerrTrace;
 TraceObject mpi_trace;
 
 void mpi_arg_trace_push(const char* mpi_fn_name, const void* called_from) {
-  //  auto sloc =  mpitracer::SourceLocation::create(called_from);
-  //
-  //  if (sloc.has_value()) {
-  //    std::cerr << mpi_fn_name << " " << sloc.value().file << " " << sloc.value().function << ":" << sloc.value().line
-  //              << "\n";
-  //  } else {
-  //    std::cerr << mpi_fn_name << "\n";
-  //  }
 }
 
 void mpi_arg_trace_exit(const char* mpi_fn_name, const void* called_from) {
-  //  auto sloc = mpitracer::SourceLocation::create(called_from);
-  //  if (sloc.has_value()) {
-  //    std::cerr << mpi_fn_name << " " << sloc.value().file << " " << sloc.value().function << ":" << sloc.value().line
-  //              << "\n";
-  //  } else {
-  //    std::cerr << mpi_fn_name << "\n";
-  //  }
   mpi_trace.close();
 }
 
@@ -98,6 +83,9 @@ void mpi_arg_trace_start(const char* mpi_fn_name, const void* called_from) {
   PMPI_Initialized(&initialized);
   if (initialized) {
     PMPI_Comm_rank(MPI_COMM_WORLD, &mpi_trace_process_rank);
+  } else {
+    std::cerr << "[MPI_ARG_TRACE] ERROR. Expected MPI to be initialzed in mpi_arg_trace_start. Called from '"
+              << mpi_fn_name << "'\n";
   }
   mpi_trace.open(mpi_trace_process_rank);
 
