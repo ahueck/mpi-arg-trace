@@ -3,13 +3,13 @@
 
 #include <mpi.h>
 
-// CHECK: MPI_{{(Send|Recv)}},MPI_INT,MPI_COMM_WORLD
+// CHECK: MPI_Send,1,0,1,MPI_INT,MPI_COMM_WORLD
 
-// CHECK: MPI_Type_contiguous,MPI_INT
-// CHECK: MPI_Type_commit,MPI_Type_contiguous
-// CHECK: MPI_Type_contiguous,MPI_Type_contiguous
+// CHECK: MPI_Type_contiguous,,,,MPI_INT
+// CHECK: MPI_Type_commit,,,,MPI_Type_contiguous
+// CHECK: MPI_Type_contiguous,,,,MPI_Type_contiguous
 
-// CHECK: MPI_{{(Send|Recv)}},MPI_Type_contiguous,MPI_COMM_WORLD
+// CHECK: MPI_Send,1,0,1,MPI_Type_contiguous,MPI_COMM_WORLD
 
 void comm(int argc, char** argv) {
   MPI_Init(&argc, &argv);

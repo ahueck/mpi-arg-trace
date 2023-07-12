@@ -9,6 +9,11 @@ add_library(${MPITRACER_PREFIX}_mpitracer SHARED
   MPIUtil.cpp
 )
 
+if(MPITRACER_PRINT_TO_CONSOLE)
+  target_compile_definitions(${MPITRACER_PREFIX}_mpitracer PRIVATE
+   MPITRACER_PRINT_TO_CONSOLE=1)
+endif ()
+
 set_property(TARGET ${MPITRACER_PREFIX}_mpitracer PROPERTY OUTPUT_NAME "mpitracer")
 add_library(mpitracer::mpitracer ALIAS ${MPITRACER_PREFIX}_mpitracer)
 
