@@ -12,6 +12,8 @@ namespace fs = std::filesystem;
 
 int mpi_trace_process_rank{0};
 
+std::string mpi_trace_target_file{""};
+
 struct StringTrace {
   std::ofstream trace_file;
 
@@ -89,6 +91,18 @@ void mpi_arg_trace_start(const char* mpi_fn_name, const void* called_from) {
   }
   mpi_trace.open(mpi_trace_process_rank);
 
+  mpi_trace_target_file = []() {
+    const auto mpi_target_file_env = getenv("MPI_ARG_TRACE_FILE_TARGET");
+    fs::path path;
+    if (mpi_target_file_env != nullptr) {
+      path += mpi_target_file_env;
+      if (is_regular_file(path)) {
+        return std::string{mpi_target_file_env};
+      }
+    }
+    return std::string{};
+  }();
+
   const auto skip_env = getenv("MPI_ARG_TRACE_SKIP_HEADER");
   if (skip_env == nullptr) {
     mpi_trace.push(util::make_stream(",", "Function", "RANK", "TAG", "POLYXFER_NUM_ELEM_NNI", "DATATYPE",
@@ -123,10 +137,11 @@ void mpi_arg_trace_push_full(
     const int* VERSION, const int* WEIGHT, const MPI_Win* WINDOW, const MPI_Aint* WINDOW_SIZE,
     const MPI_Aint* WIN_ATTACH_SIZE, const MPI_Comm* newCOMMUNICATOR, const MPI_Datatype* newDATATYPE,
     const MPI_Group* newGROUP, const MPI_Info* newINFO) {
-  const auto sloc = mpitracer::SourceLocation::create(called_from).value_or(SourceLocation{});
+  const auto sloc            = mpitracer::SourceLocation::create(called_from).value_or(SourceLocation{});
+  const std::string mpi_file = mpi_trace_target_file.empty() ? sloc.file : mpi_trace_target_file;
 
   mpi_trace.push(util::make_stream(",", mpi_fun_name, RANK, TAG, POLYXFER_NUM_ELEM_NNI, util::mpi_datatype_t{DATATYPE},
                                    util::mpi_comm_t{COMMUNICATOR, mpi_fun_name}, util::mpi_op_t{OPERATION},
                                    util::mpi_comm_t{newCOMMUNICATOR, mpi_fun_name}, util::mpi_datatype_t{newDATATYPE},
-                                   sloc.file, sloc.function, sloc.line));
+                                   mpi_file, sloc.function, sloc.line));
 }
