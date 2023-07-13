@@ -24,11 +24,12 @@ struct StringTrace {
       if (env_file != nullptr) {
         path += env_file;
         if (!is_directory(path)) {
-          std::cerr << "[MPI_ARG_TRACE] ERROR. Expected directory for MPI_ARG_TRACE_DIR. Given: '" << path << "'\n";
+          std::cerr << "[MPI_ARG_TRACE] ERROR. Expected directory for MPI_ARG_TRACE_DIR. Given: '" << path << "'"
+                    << std::endl;
           PMPI_Abort(MPI_COMM_WORLD, -1);
         }
       }
-      path /= ("mpi-arg-trace-" + std::to_string(mpi_trace_process_rank) + ".txt");
+      path /= ("mpi-arg-trace-" + std::to_string(mpi_trace_process_rank) + ".csv");
       return path;
     }(env_file);
 
@@ -36,7 +37,7 @@ struct StringTrace {
   }
 
   void push(std::string&& mpi_fun) {
-    trace_file << mpi_fun << "\n";
+    trace_file << mpi_fun << std::endl;
     trace_file.flush();
   }
 
@@ -61,7 +62,7 @@ struct CerrTrace {
   }
 
   void push(std::string&& mpi_fun) {
-    std::cerr << mpi_fun << "\n";
+    std::cerr << mpi_fun << std::endl;
   }
 };
 
@@ -87,17 +88,16 @@ void mpi_arg_trace_start(const char* mpi_fn_name, const void* called_from) {
     PMPI_Comm_rank(MPI_COMM_WORLD, &mpi_trace_process_rank);
   } else {
     std::cerr << "[MPI_ARG_TRACE] ERROR. Expected MPI to be initialzed in mpi_arg_trace_start. Called from '"
-              << mpi_fn_name << "'\n";
+              << mpi_fn_name << "'" << std::endl;
   }
   mpi_trace.open(mpi_trace_process_rank);
 
   mpi_trace_target_file = []() {
     const auto mpi_target_file_env = getenv("MPI_ARG_TRACE_FILE_TARGET");
-    fs::path path;
     if (mpi_target_file_env != nullptr) {
-      path += mpi_target_file_env;
-      if (is_regular_file(path)) {
-        return std::string{mpi_target_file_env};
+      const auto target_file_path = fs::path{mpi_target_file_env};
+      if (is_regular_file(target_file_path)) {
+        return target_file_path.string();
       }
     }
     return std::string{};
@@ -106,8 +106,8 @@ void mpi_arg_trace_start(const char* mpi_fn_name, const void* called_from) {
   const auto skip_env = getenv("MPI_ARG_TRACE_SKIP_HEADER");
   if (skip_env == nullptr) {
     mpi_trace.push(util::make_stream(",", "Function", "RANK", "TAG", "POLYXFER_NUM_ELEM_NNI", "DATATYPE",
-                                     "COMMUNICATOR", "OPERATION", "newCOMMUNICATOR", "newDATATYPE", "file", "function",
-                                     "line"));
+                                     "COMMUNICATOR", "OPERATION", "newCOMMUNICATOR", "newDATATYPE", "file",
+                                     "target-function", "line"));
   }
 }
 
