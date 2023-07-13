@@ -9,16 +9,7 @@
 namespace mpitracer {
 namespace util {
 
-struct CommObject;
-
-namespace mpi {
-std::string combiner_name_for(int combiner);
-std::optional<int> get_combiner_id(MPI_Datatype dtype);
-std::string named_combiner_string(MPI_Datatype dtype);
-std::string mpi_op_name(MPI_Op operation);
-std::string mpi_comm_name(const CommObject& operation);
-}  // namespace mpi
-
+namespace detail {
 template <typename T, typename Parameter>
 class NamedType {
  public:
@@ -38,18 +29,42 @@ class NamedType {
   T value_;
 };
 
-struct CommObject {
-  const MPI_Comm* comm;
-  std::string mpi_fun{""};
+template <typename T, typename Parameter>
+struct NamedMPIType final : public NamedType<T, Parameter> {
+ private:
+  std::string_view mpi_fun_{};
+  bool new_value_{false};
 
-  const MPI_Comm* get() const {
-    return comm;
+ public:
+  explicit NamedMPIType(T const& value, std::string_view mpi_fun = "", bool new_val = false)
+      : NamedType<T, Parameter>(value), mpi_fun_(mpi_fun), new_value_(new_val) {
+  }
+  explicit NamedMPIType(T&& value, std::string_view mpi_fun = "", bool new_val = false)
+      : NamedType<T, Parameter>(std::move(value)), mpi_fun_(mpi_fun), new_value_(new_val) {
+  }
+
+  std::string_view mpi_function() const {
+    return mpi_fun_;
+  };
+
+  bool is_initialized() const {
+    return !new_value_;
   }
 };
 
-using mpi_datatype_t = util::NamedType<const MPI_Datatype*, struct MPIDtype>;
-using mpi_comm_t     = CommObject;  // util::NamedType<const MPI_Comm*, struct MPICom>;
-using mpi_op_t       = util::NamedType<const MPI_Op*, struct MPIOp>;
+}  // namespace detail
+
+using mpi_datatype_t = detail::NamedMPIType<const MPI_Datatype*, struct MPIDtype>;
+using mpi_comm_t     = detail::NamedMPIType<const MPI_Comm*, struct MPICom>;
+using mpi_op_t       = detail::NamedMPIType<const MPI_Op*, struct MPIOp>;
+
+namespace mpi {
+std::string combiner_name_for(int combiner);
+std::optional<int> get_combiner_id(MPI_Datatype dtype);
+std::string named_combiner_string(MPI_Datatype dtype);
+std::string mpi_op_name(MPI_Op operation);
+std::string mpi_comm_name(const mpi_comm_t& operation);
+}  // namespace mpi
 
 namespace detail {
 template <class T>
@@ -101,6 +116,9 @@ struct ForSpecialization<mpi_datatype_t> {
   static auto value(const mpi_datatype_t& dtype) {
     if (dtype.get() == nullptr) {
       return std::string{""};
+    }
+    if (!dtype.is_initialized()) {
+      return std::string{dtype.mpi_function()};
     }
     const auto* datatype = dtype.get();
     auto combiner        = mpi::get_combiner_id(*datatype);

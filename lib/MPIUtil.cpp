@@ -34,7 +34,7 @@ struct MPICommTracker {
 
 namespace detail {
 template <class... MPIFunStr>
-bool mpi_creator_any_of(const std::string& lhs, MPIFunStr&&... rhs) {
+bool starts_with_any_of(const std::string& lhs, MPIFunStr&&... rhs) {
   const auto starts_with = [](const std::string& str, std::string_view prefix) { return str.rfind(prefix, 0) == 0; };
   return !lhs.empty() && ((starts_with(lhs, std::forward<MPIFunStr>(rhs))) || ...);
 }
@@ -42,43 +42,40 @@ bool mpi_creator_any_of(const std::string& lhs, MPIFunStr&&... rhs) {
 
 struct MPICommCreator {
   bool is_creator(const std::string& mpi_fun) const {
-    // "MPI_Comm_split_type"
-    return detail::mpi_creator_any_of(mpi_fun,                                                               //
-                                      "MPI_Comm_dup", "MPI_Comm_idup", "MPI_Comm_create", "MPI_Comm_split",  //
-                                      "MPI_Intercomm_create", "MPI_Intercomm_merge",                         //
-                                      "MPI_Dist_graph_create",                                               //
-                                      "MPI_Cart_create", "MPI_Cart_sub", "MPI_Cart_create",                  //
+    return detail::starts_with_any_of(mpi_fun,                                               //
+                                      "MPI_Comm_dup", "MPI_Comm_idup", "MPI_Comm_create",    //
+                                      "MPI_Comm_split",                                      //
+                                      "MPI_Intercomm_create", "MPI_Intercomm_merge",         //
+                                      "MPI_Dist_graph_create",                               //
+                                      "MPI_Cart_create", "MPI_Cart_sub", "MPI_Cart_create",  //
                                       "MPI_Graph_create");
   }
 };
 
-std::string named_comm_string(MPI_Comm comm) {
-  char name[MPI_MAX_OBJECT_NAME];
-  int namelen;
-  auto mpierr = PMPI_Comm_get_name(comm, name, &namelen);
-  if (mpierr != MPI_SUCCESS) {
-    return {""};
-  }
-  return std::string{name};
-}
+// std::string named_comm_string(MPI_Comm comm) {
+//  char name[MPI_MAX_OBJECT_NAME];
+//  int namelen;
+//  auto mpierr = PMPI_Comm_get_name(comm, name, &namelen);
+//  if (mpierr != MPI_SUCCESS) {
+//    return {""};
+//  }
+//  return std::string{name};
+//}
 
-std::string mpi_comm_name(const CommObject& comm) {
+std::string mpi_comm_name(const mpi_comm_t& comm) {
   static MPICommTracker comm_tracker;
   static MPICommCreator comm_create;
 
-  MPI_Comm comm_ = *comm.get();
-  //  std::cerr << "mpi_comm_name: " << comm.mpi_fun << "->"  << comm_ << " (\"" << comm_tracker.get(comm_) << "\")"  <<
-  //  ":" << comm.get() << "\n";
+  MPI_Comm comm_  = *comm.get();
   const auto name = comm_tracker.get(comm_);
   if (!name.empty()) {
     return name;
   }
 
-  if (!comm.mpi_fun.empty() && comm_create.is_creator(comm.mpi_fun)) {
-    const auto pushed = comm_tracker.push(comm.mpi_fun, comm_);
-    //    std::cerr << "Pushed: " << std::noboolalpha << pushed << " -> "<< comm_ << " (\"" << comm_tracker.get(comm_)
-    //    << "\")" << "\n";
-    return comm.mpi_fun;
+  const auto mpi_fun = std::string{comm.mpi_function()};
+  if (!mpi_fun.empty() && comm_create.is_creator(mpi_fun)) {
+    comm_tracker.push(mpi_fun, comm_);
+    return mpi_fun;
   }
 
   return "Unknown_MPI_Comm";

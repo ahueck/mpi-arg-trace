@@ -142,6 +142,7 @@ void mpi_arg_trace_push_full(
 
   mpi_trace.push(util::make_stream(",", mpi_fun_name, RANK, TAG, POLYXFER_NUM_ELEM_NNI, util::mpi_datatype_t{DATATYPE},
                                    util::mpi_comm_t{COMMUNICATOR, mpi_fun_name}, util::mpi_op_t{OPERATION},
-                                   util::mpi_comm_t{newCOMMUNICATOR, mpi_fun_name}, util::mpi_datatype_t{newDATATYPE},
-                                   mpi_file, sloc.function, sloc.line));
+                                   util::mpi_comm_t{newCOMMUNICATOR, mpi_fun_name, true},
+                                   util::mpi_datatype_t{newDATATYPE, mpi_fun_name, true}, mpi_file, sloc.function,
+                                   sloc.line));
 }
