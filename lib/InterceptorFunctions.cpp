@@ -40,8 +40,10 @@ struct StringTrace final : public util::MutexSyncMixin {
 
   void push(std::string&& mpi_fun) {
     lock_and_call([&] {
-      trace_file << mpi_fun << std::endl;
-      trace_file.flush();
+      if (trace_file.is_open()) {
+        trace_file << mpi_fun << std::endl;
+        trace_file.flush();
+      }
     });
   }
 
