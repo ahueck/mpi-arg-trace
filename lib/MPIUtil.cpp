@@ -3,32 +3,40 @@
 //
 #include "MPIUtil.h"
 
+#include "Util.h"
+
 #include <mpi.h>
 #include <optional>
 #include <unordered_map>
 
 namespace mpitracer::util::mpi {
 
-struct MPICommTracker {
+struct MPICommTracker final : public util::MutexSyncMixin {
+ private:
   std::unordered_map<MPI_Comm, std::string> table;
+
+ public:
   MPICommTracker() {
     table.emplace(MPI_COMM_WORLD, "MPI_COMM_WORLD");
     table.emplace(MPI_COMM_SELF, "MPI_COMM_SELF");
     table.emplace(MPI_COMM_NULL, "MPI_COMM_NULL");
-    //    table.emplace(MPI_COMM_PARENT, "MPI_COMM_PARENT");
   }
 
   std::string get(const MPI_Comm comm) const {
-    auto result = table.find(comm);
-    if (result == std::end(table)) {
-      return "";
-    }
-    return result->second;
+    return readlock_and_call([&] {
+      auto result = table.find(comm);
+      if (result == std::end(table)) {
+        return std::string{""};
+      }
+      return result->second;
+    });
   }
 
   bool push(std::string name, const MPI_Comm comm) {
-    const auto result = table.emplace(comm, name);
-    return result.second;
+    return lock_and_call([&] {
+      const auto result = table.emplace(comm, name);
+      return result.second;
+    });
   }
 };
 
@@ -41,7 +49,7 @@ bool starts_with_any_of(const std::string& lhs, MPIFunStr&&... rhs) {
 }  // namespace detail
 
 struct MPICommCreator {
-  bool is_creator(const std::string& mpi_fun) const {
+  static bool is_creator(const std::string& mpi_fun) {
     return detail::starts_with_any_of(mpi_fun,                                               //
                                       "MPI_Comm_dup", "MPI_Comm_idup", "MPI_Comm_create",    //
                                       "MPI_Comm_split",                                      //
@@ -64,7 +72,6 @@ struct MPICommCreator {
 
 std::string mpi_comm_name(const mpi_comm_t& comm) {
   static MPICommTracker comm_tracker;
-  static MPICommCreator comm_create;
 
   MPI_Comm comm_  = *comm.get();
   const auto name = comm_tracker.get(comm_);
@@ -73,7 +80,7 @@ std::string mpi_comm_name(const mpi_comm_t& comm) {
   }
 
   const auto mpi_fun = std::string{comm.mpi_function()};
-  if (!mpi_fun.empty() && comm_create.is_creator(mpi_fun)) {
+  if (!mpi_fun.empty() && MPICommCreator::is_creator(mpi_fun)) {
     comm_tracker.push(mpi_fun, comm_);
     return mpi_fun;
   }
