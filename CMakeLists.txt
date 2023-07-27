@@ -27,8 +27,10 @@ mpitracer_target_format(
 add_subdirectory(lib)
 
 if(PROJECT_IS_TOP_LEVEL)
-  enable_testing()
-  add_subdirectory(test)
+  if(MPITRACER_TEST)
+    enable_testing()
+    add_subdirectory(test)
+  endif()
 endif()
 
 if(PROJECT_IS_TOP_LEVEL)

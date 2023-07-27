@@ -17,7 +17,8 @@ option(MPITRACER_TEST_CONFIGURE_IDE "Add targets for tests to help the IDE with 
 mark_as_advanced(MPITRACER_TEST_CONFIGURE_IDE)
 option(MPITRACER_CONFIG_DIR_IS_SHARE "Install to \"share/cmake/\" instead of \"lib/cmake/\"" OFF)
 mark_as_advanced(MPITRACER_CONFIG_DIR_IS_SHARE)
-option(MPITRACER_PRINT_TO_CONSOLE "Trace is printed to std::cerr" ON)
+option(MPITRACER_PRINT_TO_CONSOLE "Trace is printed to std::cerr" OFF)
+option(MPITRACER_TEST "Build with tests" OFF)
 
 set(warning_guard "")
 if(NOT PROJECT_IS_TOP_LEVEL)
