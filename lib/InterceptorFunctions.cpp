@@ -2,6 +2,7 @@
 
 #include "MPIUtil.h"
 #include "System.h"
+#include "Util.h"
 
 #include <filesystem>
 #include <fstream>
@@ -11,40 +12,47 @@ using namespace mpitracer;
 namespace fs = std::filesystem;
 
 int mpi_trace_process_rank{0};
-
 std::string mpi_trace_target_file{""};
 
-struct StringTrace {
+struct StringTrace final : public util::MutexSyncMixin {
   std::ofstream trace_file;
 
   void open(int rank) {
-    const auto env_file = getenv("MPI_ARG_TRACE_DIR");
-    const auto file     = [](const auto* env_file) {
-      fs::path path;
-      if (env_file != nullptr) {
-        path += env_file;
-        if (!is_directory(path)) {
-          std::cerr << "[MPI_ARG_TRACE] ERROR. Expected directory for MPI_ARG_TRACE_DIR. Given: '" << path << "'"
-                    << std::endl;
-          PMPI_Abort(MPI_COMM_WORLD, -1);
+    lock_and_call([&] {
+      const auto env_file = getenv("MPI_ARG_TRACE_DIR");
+      const auto file     = [](const auto* env_file) {
+        fs::path path;
+        if (env_file != nullptr) {
+          path += env_file;
+          if (!is_directory(path)) {
+            std::cerr << "[MPI_ARG_TRACE] ERROR. Expected directory for MPI_ARG_TRACE_DIR. Given: '" << path << "'"
+                      << std::endl;
+            PMPI_Abort(MPI_COMM_WORLD, -1);
+          }
         }
-      }
-      path /= ("mpi-arg-trace-" + std::to_string(mpi_trace_process_rank) + ".csv");
-      return path;
-    }(env_file);
+        path /= ("mpi-arg-trace-" + std::to_string(mpi_trace_process_rank) + ".csv");
+        return path;
+      }(env_file);
 
-    trace_file.open(file, std::ios::out | std::ios::app);
+      trace_file.open(file, std::ios::out | std::ios::app);
+    });
   }
 
   void push(std::string&& mpi_fun) {
-    trace_file << mpi_fun << std::endl;
-    trace_file.flush();
+    lock_and_call([&] {
+      if (trace_file.is_open()) {
+        trace_file << mpi_fun << std::endl;
+        trace_file.flush();
+      }
+    });
   }
 
   void close() {
-    if (trace_file.is_open()) {
-      trace_file.close();
-    }
+    lock_and_call([&] {
+      if (trace_file.is_open()) {
+        trace_file.close();
+      }
+    });
   }
 
   ~StringTrace() {
@@ -54,7 +62,7 @@ struct StringTrace {
   }
 };
 
-struct CerrTrace {
+struct CerrTrace final : public util::MutexSyncMixin {
   void open(int rank) {
   }
 
@@ -62,7 +70,7 @@ struct CerrTrace {
   }
 
   void push(std::string&& mpi_fun) {
-    std::cerr << mpi_fun << std::endl;
+    lock_and_call([&] { std::cerr << mpi_fun << std::endl; });
   }
 };
 
