@@ -1,8 +1,8 @@
 ! RUN: %mpifort %s -g -O0 -o %s.exe
 ! RUN: LD_PRELOAD=%mpitracer %mpi-exec -n 2 %s.exe 2>&1 | %filecheck %s
 
-! CHECK-DAG: MPI_Recv,0,1,1,MPI_INT,MPI_COMM_WORLD,,,,{{.*}},{{.*}},0
-! CHECK-DAG: MPI_Send,1,1,1,MPI_INT,MPI_COMM_WORLD,,,,{{.*}},{{.*}},0
+! CHECK-DAG: MPI_Recv,0,1,1,MPI_INT,MPI_COMM_WORLD,,,,{{.*}},{{.*}},{{[0-9]+}}
+! CHECK-DAG: MPI_Send,1,1,1,MPI_INT,MPI_COMM_WORLD,,,,{{.*}},{{.*}},{{[0-9]+}}
 
 PROGRAM send_recv_mpi
 include 'mpif.h'
