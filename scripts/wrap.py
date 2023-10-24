@@ -815,14 +815,26 @@ def write_fortran_wrappers(out, decl, return_val):
 
                     # Generate the call surrounded by temp array allocation, copies, writebacks, and temp free
                     count = "*%s" % arg.countParam().name
+                    if arg.isStatus():
+                        call.addCopy("if (%s != MPI_F_STATUSES_IGNORE){" % arg.name)
                     call.addCopy("%s = (%s)malloc(sizeof(%s) * %s);" %
                                  (temp, temp_arr_type, arg.type, count))
                     call.addCopy("for (i=0; i < %s; i++)" % count)
                     call.addCopy("%s;" % copy)
-                    call.addActualMPI2(temp)
+                    if arg.isStatus():
+                        call.addCopy("}")
+                    if arg.isStatus():
+                        call.addActualMPI2("((%s == MPI_F_STATUSES_IGNORE) ? MPI_STATUSES_IGNORE : %s)" % (arg.name, temp))
+                    else:
+                        call.addActualMPI2(temp)
+                    if arg.isStatus():
+                        call.addWriteback("if (%s != MPI_F_STATUSES_IGNORE){" % arg.name)
                     call.addWriteback("for (i=0; i < %s; i++)" % count)
                     call.addWriteback("%s;" % writeback)
                     call.addWriteback("free(%s);" % temp)
+                    if arg.isStatus():
+                        call.addWriteback("}")
+
 
     call.write(out)
     if decl.returnsErrorCode():
