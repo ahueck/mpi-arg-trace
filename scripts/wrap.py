@@ -788,13 +788,16 @@ def write_fortran_wrappers(out, decl, return_val):
                 # For MPI-2, other pointer and array types need temporaries and special conversions.
                 if not arg.isHandleArray():
                     call.addTemp(arg.type, temp)
-                    call.addActualMPI2("&%s" % temp)
+                    if arg.isStatus():
+                        call.addActualMPI2("((%s == MPI_F_STATUS_IGNORE) ? MPI_STATUS_IGNORE : &%s)" % (arg.name, temp))
+                    else:
+                        call.addActualMPI2("&%s" % (temp))
 
                     if arg.isStatus():
-                        call.addCopy("%s_f2c(%s, &%s);"  % (conv, arg.name, temp))
-                        call.addWriteback("%s_c2f(&%s, %s);" % (conv, temp, arg.name))
+                        call.addCopy("if(%s != MPI_F_STATUS_IGNORE) %s_f2c(%s, &%s);" % (arg.name, conv, arg.name, temp))
+                        call.addWriteback("if(%s != MPI_F_STATUS_IGNORE) %s_c2f(&%s, %s);" % (arg.name, conv, temp, arg.name))
                     else:
-                        call.addCopy("%s = %s_f2c(*%s);"  % (temp, conv, arg.name))
+                        call.addCopy("%s = %s_f2c(*%s);" % (temp, conv, arg.name))
                         call.addWriteback("*%s = %s_c2f(%s);" % (arg.name, conv, temp))
                 else:
                     # Make temporary variables for the array and the loop var
