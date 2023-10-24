@@ -13,6 +13,7 @@ config.mpitracer_script_dir = "@MPITRACER_SCRIPT_DIR@"
 config.mpitracer_lib = "$<TARGET_FILE_NAME:mpitracer::mpitracer>"
 config.mpicc="@MPI_C_COMPILER@"
 config.mpicxx="@MPI_CXX_COMPILER@"
+config.mpifort="@MPI_Fortran_COMPILER@"
 config.mpiexec="@MPIEXEC@"
 
 # Let the main config do the real work.

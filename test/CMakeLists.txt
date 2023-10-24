@@ -110,6 +110,7 @@ set(MPITRACER_TEST_DEPENDS
 
 set(MPITRACER_SUITES
   all
+  fortran
 )
 
 mpitracer_add_lit_target(SUITES ${MPITRACER_SUITES})

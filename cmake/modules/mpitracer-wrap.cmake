@@ -3,7 +3,7 @@ function(mpitracer_make_wrap input output workdir)
   
   add_custom_command(
     OUTPUT ${output}
-    COMMAND ${Python3_EXECUTABLE} ${WRAP_SCRIPT} ${input} -o
+    COMMAND ${Python3_EXECUTABLE} ${WRAP_SCRIPT} -f ${input} -o
             ${output}
     MAIN_DEPENDENCY ${input}
     WORKING_DIRECTORY ${workdir}
