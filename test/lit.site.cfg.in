@@ -10,6 +10,7 @@ config.filecheck = "@MPITRACER_FILECHECK_EXEC@"
 # Project related:
 config.mpitracer_lib_dir = "@MPITRACER_LIBRARY_DIR@"
 config.mpitracer_script_dir = "@MPITRACER_SCRIPT_DIR@"
+config.fortran_enabled = @MPITRACER_FORTRAN@
 config.mpitracer_lib = "$<TARGET_FILE_NAME:mpitracer::mpitracer>"
 config.mpicc="@MPI_C_COMPILER@"
 config.mpicxx="@MPI_CXX_COMPILER@"

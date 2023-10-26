@@ -25,6 +25,8 @@ set_property(TARGET ${MPITRACER_PREFIX}_mpitracer PROPERTY CXX_STANDARD_REQUIRED
 
 #target_compile_options (${MPITRACER_PREFIX}_mpitracer PUBLIC -fno-rtti)
 
+target_compile_definitions(${MPITRACER_PREFIX}_mpitracer PRIVATE $<$<BOOL:${MPITRACER_ENABLE_FORTRAN}>:MPITRACER_WITH_FORTRAN=1>)
+
 target_include_directories(${MPITRACER_PREFIX}_mpitracer ${warning_guard}
   PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/lib>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

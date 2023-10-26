@@ -136,7 +136,9 @@ struct FortranRetAddr {
 FortranRetAddr mpi_fortran_ret;
 
 void mpi_arg_fortran_push_ret_adr(const void* called_from) {
+#ifdef MPITRACER_WITH_FORTRAN
   mpi_fortran_ret.push_addr(called_from);
+#endif
 }
 
 void mpi_arg_trace_push_full(

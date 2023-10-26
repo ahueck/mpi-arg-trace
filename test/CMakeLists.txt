@@ -51,6 +51,8 @@ function(configure_mpitracer_lit_site_cfg input output)
   set(MPITRACER_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
   set(MPITRACER_SCRIPT_DIR ${MPITRACER_PROJECT_DIR}/scripts)
 
+  pythonize_bool(MPITRACER_ENABLE_FORTRAN MPITRACER_FORTRAN)
+
   mpitracer_target_generate_file(${input} ${output})
 endfunction()
 

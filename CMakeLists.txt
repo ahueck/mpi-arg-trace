@@ -5,7 +5,7 @@ project(
     VERSION 0.2.0
     DESCRIPTION "MPI argument tracer"
     HOMEPAGE_URL "https://github.com/ahueck/mpi-arg-trace"
-    LANGUAGES CXX C Fortran
+    LANGUAGES CXX C
 )
 
 list(
