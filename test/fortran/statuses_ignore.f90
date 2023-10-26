@@ -1,10 +1,10 @@
 ! RUN: %mpifort %s -g -O0 -o %s.exe
 ! RUN: LD_PRELOAD=%mpitracer %mpi-exec -n 2 %s.exe 2>&1 | %filecheck %s
 
-! CHECK-DAG: MPI_Irecv,0,0,1,MPI_INTEGER,MPI_COMM_WORLD,,,,{{.*}},{{.*}},{{[0-9]+}}
-! CHECK-DAG: MPI_Irecv,0,0,1,MPI_INTEGER,MPI_COMM_WORLD,,,,{{.*}},{{.*}},{{[0-9]+}}
-! CHECK-DAG: MPI_Isend,1,0,1,MPI_INTEGER,MPI_COMM_WORLD,,,,{{.*}},{{.*}},{{[0-9]+}}
-! CHECK-DAG: MPI_Isend,1,0,1,MPI_INTEGER,MPI_COMM_WORLD,,,,{{.*}},{{.*}},{{[0-9]+}}
+! CHECK-DAG: MPI_Irecv,0,0,1,MPI_INTEGER,MPI_COMM_WORLD,,,,{{.*}},{{.*}},35
+! CHECK-DAG: MPI_Irecv,0,0,1,MPI_INTEGER,MPI_COMM_WORLD,,,,{{.*}},{{.*}},36
+! CHECK-DAG: MPI_Isend,1,0,1,MPI_INTEGER,MPI_COMM_WORLD,,,,{{.*}},{{.*}},31
+! CHECK-DAG: MPI_Isend,1,0,1,MPI_INTEGER,MPI_COMM_WORLD,,,,{{.*}},{{.*}},32
 
 PROGRAM main
     USE mpi

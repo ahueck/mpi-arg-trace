@@ -3,7 +3,7 @@
 
 #include <mpi.h>
 
-// CHECK: MPI_Allreduce,,,1,MPI_INT,MPI_COMM_WORLD,MPI_SUM
+// CHECK: MPI_Allreduce,,,1,MPI_INT,MPI_COMM_WORLD,MPI_SUM,,,{{.*}}/mpi_op.c,comm,13
 
 void comm(int argc, char** argv) {
   MPI_Init(&argc, &argv);

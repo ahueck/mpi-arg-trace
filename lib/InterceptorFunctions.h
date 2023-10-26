@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+void mpi_arg_fortran_push_ret_adr(const void* called_from);
+
 // TODO: expand for all possible MPI args
 void mpi_arg_trace_push(const char* mpi_fn_name, const void* called_from);
 void mpi_arg_trace_push_full(

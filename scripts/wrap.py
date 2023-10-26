@@ -663,6 +663,8 @@ def write_fortran_binding(out, decl, delegate_name, binding, stmts=None):
     """
     out.write(decl.fortranPrototype(binding, default_modifiers))
     out.write(" { \n")
+    out.write("    const void* wrapped_ret_addr = __builtin_return_address(0);\n")
+    out.write("    mpi_arg_fortran_push_ret_adr(wrapped_ret_addr);\n")
     if stmts:
         out.write(joinlines(map(lambda s: "    " + s, stmts)))
     if decl.returnsErrorCode():
