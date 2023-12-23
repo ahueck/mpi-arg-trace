@@ -8,9 +8,6 @@ string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}"
   PROJECT_IS_TOP_LEVEL
 )
 
-find_package(MPI REQUIRED)
-find_package(Python3 REQUIRED)
-
 set(MPITRACER_LOG_LEVEL_RT 0 CACHE STRING "Granularity of runtime logger. 3 is most verbose, 0 is least.")
 
 option(MPITRACER_TEST_CONFIGURE_IDE "Add targets for tests to help the IDE with completion etc." ON)
@@ -19,6 +16,17 @@ option(MPITRACER_CONFIG_DIR_IS_SHARE "Install to \"share/cmake/\" instead of \"l
 mark_as_advanced(MPITRACER_CONFIG_DIR_IS_SHARE)
 option(MPITRACER_PRINT_TO_CONSOLE "Trace is printed to std::cerr" OFF)
 option(MPITRACER_TEST "Build with tests" OFF)
+
+option(MPITRACER_ENABLE_FORTRAN "Enable Fortran MPI intercepting" OFF)
+
+if(MPITRACER_ENABLE_FORTRAN)
+  enable_language(Fortran)
+  find_package(MPI REQUIRED COMPONENTS C CXX Fortran)
+else()
+  find_package(MPI REQUIRED)
+endif()
+
+find_package(Python3 REQUIRED)
 
 set(warning_guard "")
 if(NOT PROJECT_IS_TOP_LEVEL)
@@ -80,4 +88,3 @@ if(MPITRACER_CONFIG_DIR_IS_SHARE)
 else()
   set(MPITRACER_INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 endif()
-

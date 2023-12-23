@@ -111,6 +111,36 @@ void mpi_arg_trace_start(const char* mpi_fn_name, const void* called_from) {
   }
 }
 
+struct FortranRetAddr {
+ private:
+  const void* current_addr{nullptr};
+
+ public:
+  void push_addr(const void* called_from) {
+    current_addr = called_from;
+  }
+
+  const void* get() const {
+    return current_addr;
+  }
+
+  void reset() {
+    current_addr = nullptr;
+  }
+
+  operator bool() const {
+    return current_addr != nullptr;
+  }
+};
+
+FortranRetAddr mpi_fortran_ret;
+
+void mpi_arg_fortran_push_ret_adr(const void* called_from) {
+#ifdef MPITRACER_WITH_FORTRAN
+  mpi_fortran_ret.push_addr(called_from);
+#endif
+}
+
 void mpi_arg_trace_push_full(
     const char* mpi_fun_name, const void* called_from, const int* ACCESS_MODE, const MPI_Aint* ALLOC_MEM_NUM_BYTES,
     const int* ARGUMENT_COUNT, char*** ARGUMENT_LIST, const int* ARRAY_LENGTH, const int* ARRAY_LENGTH_NNI,
@@ -137,7 +167,10 @@ void mpi_arg_trace_push_full(
     const int* VERSION, const int* WEIGHT, const MPI_Win* WINDOW, const MPI_Aint* WINDOW_SIZE,
     const MPI_Aint* WIN_ATTACH_SIZE, const MPI_Comm* newCOMMUNICATOR, const MPI_Datatype* newDATATYPE,
     const MPI_Group* newGROUP, const MPI_Info* newINFO) {
-  const auto sloc            = mpitracer::SourceLocation::create(called_from).value_or(SourceLocation{});
+  auto clear_fortran_ret = mpitracer::util::create_scope_exit([&]() { mpi_fortran_ret.reset(); });
+  const auto ret_addr    = (mpi_fortran_ret ? mpi_fortran_ret.get() : called_from);
+
+  const auto sloc            = mpitracer::SourceLocation::create(ret_addr).value_or(SourceLocation{});
   const std::string mpi_file = mpi_trace_target_file.empty() ? sloc.file : mpi_trace_target_file;
 
   mpi_trace.push(util::make_stream(",", mpi_fun_name, RANK, TAG, POLYXFER_NUM_ELEM_NNI, util::mpi_datatype_t{DATATYPE},

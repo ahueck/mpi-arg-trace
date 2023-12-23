@@ -4,10 +4,10 @@
 #include <mpi.h>
 
 // CHECK: MPI_Comm_dup,,,,,MPI_COMM_WORLD
-// CHECK: MPI_Bcast,0,,1,MPI_INT,MPI_Comm_dup
+// CHECK: MPI_Bcast,0,,1,MPI_INT,MPI_Comm_dup,,,,{{.*}}/mpi_comm.c,comm,19
 
 // CHECK: MPI_Comm_dup,,,,,MPI_Comm_dup
-// CHECK: MPI_Bcast,0,,1,MPI_INT,MPI_Comm_dup
+// CHECK: MPI_Bcast,0,,1,MPI_INT,MPI_Comm_dup,,,,{{.*}}/mpi_comm.c,comm,23
 
 void comm(int argc, char** argv) {
   MPI_Init(&argc, &argv);

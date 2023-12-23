@@ -20,6 +20,7 @@
 #include <execinfo.h>
 #include <filesystem>
 #include <iostream>
+#include <link.h>  // For link_map, see SourceLocation::create
 #include <memory>
 #include <sstream>
 #include <sys/resource.h>
@@ -136,9 +137,16 @@ class SourceLocHelper {
 
 struct RemoveEnvInScope {
   explicit RemoveEnvInScope(std::string_view var_name) : var_name_(var_name) {
-    old_val_ = getenv(var_name_.data());
+    old_val_ = [](std::string_view env_var_name) {
+      const auto* env_data = getenv(env_var_name.data());
+      if (env_data) {
+        return env_data;
+      }
+      return "";
+    }(var_name);
+
     if (!old_val_.empty()) {
-      setenv(var_name_.data(), "", true);
+      setenv(var_name.data(), "", true);
     }
   }
 
@@ -164,11 +172,18 @@ std::optional<SourceLocation> SourceLocation::create(const void* addr, intptr_t 
     const auto& proc        = system::Process::get();
 
     // FIXME: Inst Pointer points one past what we need with __built_in_return_addr(0), hacky way to fix:
-    const intptr_t addr = reinterpret_cast<intptr_t>(paddr) - offset_ptr;
+    const auto addr = [](const auto addr) {  //  reinterpret_cast<intptr_t>(paddr) - offset_ptr;
+      // Transform addr to VMA Addr:
+      Dl_info info;
+      link_map* link_map;
+      dladdr1((void*)addr, &info, (void**)&link_map, RTLD_DL_LINKMAP);
+      return addr - link_map->l_addr;
+    }(reinterpret_cast<intptr_t>(paddr) - offset_ptr);
 
     if (sloc_helper.hasLLVMSymbolizer()) {
       std::ostringstream command;
       command << "llvm-symbolizer --demangle --output-style=GNU -f -e " << proc.exe() << " " << addr;
+      //      std::cerr << command.str() << "\n";
       auto llvm_symbolizer = system::CommandPipe::create(command.str());
       if (llvm_symbolizer) {
         return llvm_symbolizer;

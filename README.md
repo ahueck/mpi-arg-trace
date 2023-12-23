@@ -21,6 +21,7 @@ The shared library will be in the folder `build/lib`.
 |-------------------------------|:-------:|------------------------------------------------|
 | `MPITRACER_PRINT_TO_CONSOLE`  |  `OFF`  | Print trace to console, instead of file.       |
 | `MPITRACER_TEST`              |  `OFF`  | Build with tests. Needs `lit` and `FileCheck`. |
+| `MPITRACER_ENABLE_FORTRAN`    |  `OFF`  | Build with Fortran MPI support.                |
 
 
 #### Testing

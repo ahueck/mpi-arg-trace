@@ -3,6 +3,7 @@
 
 #include "System.h"
 
+#include <functional>
 #include <mpi.h>
 #include <sstream>
 
@@ -10,6 +11,24 @@ namespace mpitracer {
 namespace util {
 
 namespace detail {
+
+template <typename Fn>
+class ScopeExit {
+ private:
+  Fn exit_fn_;
+
+ public:
+  explicit ScopeExit(Fn&& exit_fn) : exit_fn_(std::forward<Fn>(exit_fn)) {
+  }
+
+  ScopeExit(const ScopeExit&)            = delete;
+  ScopeExit& operator=(const ScopeExit&) = delete;
+
+  ~ScopeExit() {
+    std::invoke(exit_fn_);
+  }
+};
+
 template <typename T, typename Parameter>
 class NamedType {
  public:
@@ -53,6 +72,11 @@ struct NamedMPIType final : public NamedType<T, Parameter> {
 };
 
 }  // namespace detail
+
+template <typename Fn>
+detail::ScopeExit<Fn> create_scope_exit(Fn&& exit_fn) {
+  return detail::ScopeExit<Fn>(std::forward<Fn>(exit_fn));
+}
 
 using mpi_datatype_t = detail::NamedMPIType<const MPI_Datatype*, struct MPIDtype>;
 using mpi_comm_t     = detail::NamedMPIType<const MPI_Comm*, struct MPICom>;
