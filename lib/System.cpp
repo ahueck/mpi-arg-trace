@@ -137,9 +137,16 @@ class SourceLocHelper {
 
 struct RemoveEnvInScope {
   explicit RemoveEnvInScope(std::string_view var_name) : var_name_(var_name) {
-    old_val_ = getenv(var_name_.data());
+    old_val_ = [](std::string_view env_var_name) {
+      const auto* env_data = getenv(env_var_name.data());
+      if (env_data) {
+        return env_data;
+      }
+      return "";
+    }(var_name);
+
     if (!old_val_.empty()) {
-      setenv(var_name_.data(), "", true);
+      setenv(var_name.data(), "", true);
     }
   }
 
